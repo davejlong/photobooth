@@ -3,30 +3,26 @@ import time
 import signal
 import sys
 
-red_pin = 7
-green_pin = 11
-blue_pin = 13
+leds = [7, 11, 13]
+button_pin = 15
 
 def main():
 	print("Running")
 	GPIO.setmode(GPIO.BOARD)
-	GPIO.setup(red_pin, GPIO.OUT)
-	GPIO.setup(green_pin, GPIO.OUT)
-	GPIO.setup(blue_pin, GPIO.OUT)
-	while True:
-		take_picture()
-		off_all()
-		time.sleep(5)
+	for led in leds:
+		GPIO.setup(led, GPIO.OUT)
+	GPIO.setup(button_pin, GPIO.IN)
+
+	# TODO: Setup handling to ensure no event queue
+	GPIO.add_event_detect(button_pin, GPIO.RISING, callback=take_picture, bouncetime=300)
 
 def on_all():
-	on(red_pin)
-	on(green_pin)
-	on(blue_pin)
+	for led in leds:
+		on(led)
 
 def off_all():
-	off(red_pin)
-	off(green_pin)
-	off(blue_pin)
+	for led in leds:
+		off(led)
 
 def on(pin):
 	GPIO.output(pin, GPIO.HIGH)
@@ -34,18 +30,16 @@ def on(pin):
 def off(pin):
 	GPIO.output(pin, GPIO.LOW)
 
-def take_picture():
+def take_picture(channel):
 	print("Taking a picture")
 	on_all()
-	time.sleep(1)
-	off(red_pin)
-	time.sleep(1)
-	off(green_pin)
-	time.sleep(1)
-	off(blue_pin)
+	for led in leds:
+		time.sleep(1)
+		off(led)
 	time.sleep(0.5)
 	on_all()
 	time.sleep(1)
+	off_all()
 
 def signal_handler(signal, frame):
 	print("Shutting down")
@@ -54,3 +48,5 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 main()
+while True:
+	time.sleep(0.5)
