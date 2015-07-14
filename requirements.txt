@@ -1,0 +1,2 @@
+pygame>=1.9.2a0
+picamera>=1.10
